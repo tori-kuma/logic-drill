@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科学のための論理的思考ドリル</title>
+<style>
+    body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; line-height: 1.6; color: #333; max-width: 650px; margin: 0 auto; padding: 20px; background-color: #f0f4f8; }
+    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #d1d9e6; }
+    h1 { font-size: 1.4em; text-align: center; color: #34495e; margin-bottom: 25px; border-bottom: 2px solid #34495e; padding-bottom: 10px; display: inline-block; width: 100%; }
+    .question-text { font-weight: bold; font-size: 1.15em; margin-bottom: 20px; color: #2c3e50; }
+    .options { display: flex; flex-direction: column; gap: 12px; }
+    button { padding: 15px 20px; border: 2px solid #e0e0e0; border-radius: 8px; background: #fff; cursor: pointer; text-align: left; font-size: 1em; transition: all 0.2s ease; color: #555; }
+    button:hover { background-color: #f8f9fa; border-color: #b0b0b0; transform: translateY(-1px); }
+    
+    /* 正解・不正解のスタイル */
+    button.correct { background-color: #d4edda; border-color: #28a745; color: #155724; font-weight: bold; }
+    button.incorrect { background-color: #f8d7da; border-color: #dc3545; color: #721c24; opacity: 0.7; }
+    
+    .feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; line-height: 1.6; background-color: #f8f9fa; }
+    .feedback.show { display: block; animation: fadeIn 0.3s ease-in; }
+    .feedback-correct { border-left: 5px solid #28a745; }
+    .feedback-incorrect { border-left: 5px solid #ffc107; }
+    
+    .physics-link { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; font-size: 0.95em; color: #555; }
+    .physics-link strong { color: #e74c3c; }
+
+    .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
+    .nav-btn { background-color: #34495e; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+    .nav-btn:hover { background-color: #2c3e50; }
+    .nav-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+    
+    #score-screen { text-align: center; display: none; padding: 40px 20px; }
+    .progress { text-align: right; font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px; font-weight: bold; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <h1>科学のための論理的思考ドリル</h1>
+    <div class="progress">問 <span id="current-q">1</span> / <span id="total-q">5</span></div>
+    
+    <div class="card">
+        <div class="question-text" id="question">読み込み中...</div>
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prev-btn" disabled>前へ</button>
+        <button class="nav-btn" id="next-btn">次へ</button>
+    </div>
+</div>
+
+<div id="score-screen" class="card">
+    <h2 style="color: #2c3e50; margin-bottom: 20px;">お疲れ様でした！</h2>
+    <p style="font-size: 1.2em;">あなたの正解数は...</p>
+    <div style="font-size: 4em; color: #34495e; margin: 20px 0; font-weight: bold;">
+        <span id="score">0</span> <span style="font-size: 0.4em; color: #7f8c8d;">/ 5</span>
+    </div>
+    <p id="comment" style="margin-bottom: 30px; font-size: 1.1em;">「〜がない」という条件の重要性が理解できましたか？</p>
+    <button class="nav-btn" onclick="location.reload()">もう一度挑戦する</button>
+</div>
+
+<script>
+(function() {
+    const quizData = [
+        {
+            q: "【内訳と合計の論理】<br>あるレストランの会計総額は、「食事代」と「ドリンク代」の合計で決まります。<br><b>「会計総額が、食事代と等しくなる」</b>ための条件として、論理的に正しい記述はどれですか。",
+            options: [
+                "「食事を注文した」",
+                "「ドリンクを注文しなかった」",
+                "「食事とドリンクの両方を注文した」"
+            ],
+            correct: 1,
+            rationale: "正解は「ドリンクを注文しなかった」です。<br>式で表すと [総額 ＝ 食事代 ＋ ドリンク代] です。[総額 ＝ 食事代] にするためには、[ドリンク代 ＝ 0] である必要があります。「食事を注文した」だけでは、ドリンクの有無が不明なため条件としては不十分です。",
+            physicsLink: "物理化学では：『内部エネルギー変化 ΔU が熱 q と等しくなる』ための条件は、『仕事 w がゼロであること』なのと同じ論理です。"
+        },
+        {
+            q: "【存在と排除の論理】<br>ある学生の成績評価は、「テストの点数」と「レポートの点数」の合計（100点満点）で決まります。<br>先生が<b>「成績評価は、テストの点数だけで決まります」</b>と宣言しました。この発言が意味する論理的な状況はどれですか。",
+            options: [
+                "「テストの点数が0点ではない（テストが実施される）」",
+                "「レポートの点数が0点ではない（レポートが実施される）」",
+                "「レポートの点数は加算されない（レポート課題がない、または0点である）」"
+            ],
+            correct: 2,
+            rationale: "正解は「レポートの点数は加算されない」です。<br>[評価 ＝ テスト ＋ レポート] において、[評価 ＝ テスト] とするためには、余計な項である [レポート] を排除（ゼロに）する必要があります。",
+            physicsLink: "物理化学では：『エンタルピー変化 ΔH が熱 q と等しくなる』と言うために、『非膨張仕事がない』ことをわざわざ断る理由と同じです。"
+        },
+        {
+            q: "【必要条件と十分条件の論理】<br>「仕事」という概念には、「肉体労働」と「頭脳労働」の2種類しかないと仮定します。<br>このとき、<b>「今日の仕事は、肉体労働だけだった（肉体労働100%）」</b>という状況を説明する言葉として、論理的に最も厳密な（誤解の余地がない）ものはどれですか。",
+            options: [
+                "「今日は肉体労働をした」",
+                "「今日は仕事をしたが、頭脳労働はしなかった」",
+                "「今日は頭脳労働をしなかった」"
+            ],
+            correct: 1,
+            rationale: "正解は「今日は仕事をしたが、頭脳労働はしなかった」です。<br>Aの「肉体労働をした」だけでは、頭脳労働もした可能性（両方やった）を否定できません。<br>Cの「頭脳労働をしなかった」だけでは、そもそも働いていない（休日）可能性が残ります。<br>「仕事をした（存在）」かつ「頭脳労働ではない（排除）」の両方が揃って初めて「肉体労働のみ」が確定します。",
+            physicsLink: "物理化学では：単に「膨張仕事がある」と言うだけでは不十分で、「非膨張仕事がない」という条件を加えることで初めて、純粋な体積変化によるエネルギー議論が可能になります。"
+        },
+        {
+            q: "【項の消去の論理】<br>ネットショッピングの支払い総額は、「商品価格」と「送料」と「手数料」の合計です。<br><b>「支払い総額が、商品価格と等しくなった」</b>とき、確実に言えることは何ですか。",
+            options: [
+                "「送料が無料だった」",
+                "「手数料が無料だった」",
+                "「送料と手数料の両方が無料だった」"
+            ],
+            correct: 2,
+            rationale: "正解は「送料と手数料の両方が無料だった」です。<br>式で表すと [総額 ＝ 商品 ＋ 送料 ＋ 手数料] です。<br>[総額 ＝ 商品] となるためには、余分な項である [送料] と [手数料] の<b>両方がゼロ</b>でなければなりません。片方だけゼロでも不十分です。",
+            physicsLink: "物理化学では：式を簡単にする（近似する）際、どの項をゼロとみなして消去したのか（断熱近似、定積近似など）を意識することが重要です。"
+        },
+        {
+            q: "【変化量の論理】<br>あるダムの貯水量の変化は、「流入した水量」と「放流した水量」の差で決まります。<br><b>「貯水量の変化が、流入した水量と等しい」</b>と言えるのは、どのような場合ですか。",
+            options: [
+                "「放流ゲートが完全に閉じていた（放流量＝0）場合」",
+                "「放流ゲートが全開だった場合」",
+                "「流入した水量よりも放流した水量が多かった場合」"
+            ],
+            correct: 0,
+            rationale: "正解は「放流ゲートが完全に閉じていた場合」です。<br>[変化 ＝ 流入 － 放流] という式において、[変化 ＝ 流入] となる条件は [放流 ＝ 0] です。<br>「水が入ってきた」ことではなく、「水が出ていかなかった」ことが論理的な条件となります。",
+            physicsLink: "物理化学では：第一法則 ΔU = q + w において、断熱条件（q=0）のときに初めて ΔU = w と言えるのと同じ論理構造です。"
+        }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let answered = [];
+
+    // 初期化処理
+    window.onload = function() {
+        const totalQEl = document.getElementById('total-q');
+        if(totalQEl) totalQEl.textContent = quizData.length;
+        
+        const prevBtn = document.getElementById('prev-btn');
+        if(prevBtn) prevBtn.onclick = function() { prevQuestion(); };
+        
+        const nextBtn = document.getElementById('next-btn');
+        if(nextBtn) nextBtn.onclick = function() { nextQuestion(); };
+
+        loadQuestion();
+    };
+
+    function loadQuestion() {
+        const data = quizData[currentIdx];
+        const currentQEl = document.getElementById('current-q');
+        if(currentQEl) currentQEl.textContent = currentIdx + 1;
+        
+        const qEl = document.getElementById('question');
+        if(qEl) qEl.innerHTML = data.q;
+        
+        const optEl = document.getElementById('options');
+        if(optEl) {
+            optEl.innerHTML = '';
+            for (let i = 0; i < data.options.length; i++) {
+                let btn = document.createElement('button');
+                btn.innerHTML = data.options[i];
+                btn.onclick = function() { checkAnswer(i, btn); };
+                
+                if (answered[currentIdx]) {
+                    btn.disabled = true;
+                    if (i === data.correct) {
+                        btn.className = 'correct';
+                    } else if (i === answered[currentIdx].selected && i !== data.correct) {
+                        btn.className = 'incorrect';
+                    }
+                }
+                optEl.appendChild(btn);
+            }
+        }
+
+        const feedEl = document.getElementById('feedback');
+        if(feedEl) {
+            if (answered[currentIdx]) {
+                showFeedback(answered[currentIdx].isCorrect, data.rationale, data.physicsLink);
+            } else {
+                feedEl.style.display = 'none';
+                feedEl.className = 'feedback';
+            }
+        }
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        if(prevBtn) prevBtn.disabled = (currentIdx === 0);
+        if(nextBtn) {
+            if (currentIdx === quizData.length - 1) {
+                nextBtn.textContent = "結果を見る";
+            } else {
+                nextBtn.textContent = "次へ";
+            }
+        }
+    }
+
+    function checkAnswer(selectedIndex, btn) {
+        if (answered[currentIdx]) return;
+        
+        const data = quizData[currentIdx];
+        const isCorrect = (selectedIndex === data.correct);
+        
+        answered[currentIdx] = { selected: selectedIndex, isCorrect: isCorrect };
+        
+        if (isCorrect) {
+            btn.className = 'correct';
+            score++;
+            showFeedback(true, data.rationale, data.physicsLink);
+        } else {
+            btn.className = 'incorrect';
+            const optEl = document.getElementById('options');
+            if(optEl && optEl.children[data.correct]) {
+                optEl.children[data.correct].className = 'correct';
+            }
+            showFeedback(false, data.rationale, data.physicsLink);
+        }
+        
+        const optEl = document.getElementById('options');
+        if(optEl) {
+            for(let i=0; i<optEl.children.length; i++){
+                optEl.children[i].disabled = true;
+            }
+        }
+    }
+
+    function showFeedback(isCorrect, text, linkText) {
+        const feedEl = document.getElementById('feedback');
+        if(feedEl) {
+            let content = (isCorrect ? "<strong>正解！</strong> " : "<strong>不正解...</strong> ") + text;
+            if(linkText) {
+                content += "<div class='physics-link'><strong>💡 " + linkText + "</strong></div>";
+            }
+            feedEl.innerHTML = content;
+            feedEl.className = 'feedback show ' + (isCorrect ? 'feedback-correct' : 'feedback-incorrect');
+            feedEl.style.display = 'block';
+        }
+    }
+
+    function nextQuestion() {
+        if (currentIdx < quizData.length - 1) {
+            currentIdx++;
+            loadQuestion();
+        } else {
+            showScore();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIdx > 0) {
+            currentIdx--;
+            loadQuestion();
+        }
+    }
+
+    function showScore() {
+        const quizContainer = document.getElementById('quiz-container');
+        const scoreScreen = document.getElementById('score-screen');
+        const scoreEl = document.getElementById('score');
+        
+        if(quizContainer) quizContainer.style.display = 'none';
+        if(scoreScreen) scoreScreen.style.display = 'block';
+        if(scoreEl) scoreEl.textContent = score;
+    }
+})();
+</script>
+
+</body>
+</html>
