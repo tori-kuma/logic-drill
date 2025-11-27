@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>日本語の論理トレーニング（三択問題）</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .question {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .q-title {
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+    .orig {
+      margin-bottom: 0.5rem;
+    }
+    .choices label {
+      display: block;
+      margin: 0.2rem 0;
+    }
+    button {
+      margin-top: 0.4rem;
+      padding: 0.2rem 0.8rem;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+    }
+    .correct {
+      background: #e6ffe6;
+      border: 1px solid #55a455;
+    }
+    .incorrect {
+      background: #ffecec;
+      border: 1px solid #d25b5b;
+    }
+    .neutral {
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>日本語の論理トレーニング（三択問題）</h1>
+  <p>選択肢を一つ選んで「答えを見る」ボタンを押すと，正誤と簡単な解説が表示されます。</p>
+
+  <!-- 問題1 -->
+  <div class="question">
+    <div class="q-title">問題1</div>
+    <div class="orig">
+      「<strong>犬以外の動物は入室禁止</strong>」という文と
+      <strong>同じ意味</strong>のものはどれですか。
+    </div>
+    <div class="choices">
+      <label><input type="radio" name="q1" value="A"> A. 犬は入室禁止である</label>
+      <label><input type="radio" name="q1" value="B"> B. 犬でない動物は入室禁止である</label>
+      <label><input type="radio" name="q1" value="C"> C. 犬と動物は入室禁止である</label>
+      <label><input type="radio" name="q1" value="D"> D. 動物はすべて入室禁止である</label>
+    </div>
+    <button type="button" onclick="checkAnswer('q1','B')">答えを見る</button>
+    <div id="q1-result" class="result neutral"></div>
+  </div>
+
+  <!-- 問題2 -->
+  <div class="question">
+    <div class="q-title">問題2</div>
+    <div class="orig">
+      「<strong>非常口以外は開けてはいけない</strong>」と
+      <strong>同じ意味</strong>になる文はどれですか。
+    </div>
+    <div class="choices">
+      <label><input type="radio" name="q2" value="A"> A. 非常口は開けてはいけない</label>
+      <label><input type="radio" name="q2" value="B"> B. 非常口でなければ開けてよい</label>
+      <label><input type="radio" name="q2" value="C"> C. 非常口でないものは開けてはいけない</label>
+      <label><input type="radio" name="q2" value="D"> D. すべての扉は非常口である</label>
+    </div>
+    <button type="button" onclick="checkAnswer('q2','C')">答えを見る</button>
+    <div id="q2-result" class="result neutral"></div>
+  </div>
+
+  <!-- 問題3 -->
+  <div class="question">
+    <div class="q-title">問題3</div>
+    <div class="orig">
+      「<strong>非電気製品ではない機器のみ使用可</strong>」という文の意味として
+      <strong>正しい</strong>ものはどれですか。
+    </div>
+    <div class="choices">
+      <label><input type="radio" name="q3" value="A"> A. 電気製品は使用できない</label>
+      <label><input type="radio" name="q3" value="B"> B. 電気を使わない機器だけ使用できる</label>
+      <label><input type="radio" name="q3" value="C"> C. 電気製品である機器のみ使用できる</label>
+      <label><input type="radio" name="q3" value="D"> D. すべての機器が使用できる</label>
+    </div>
+    <button type="button" onclick="checkAnswer('q3','C')">答えを見る</button>
+    <div id="q3-result" class="result neutral"></div>
+  </div>
+
+  <script>
+    const explanations = {
+      q1: "「犬以外」は「犬でないもの」という意味です。したがって「犬でない動物は入室禁止である」が正しい言い換えになります。",
+      q2: "「A以外はダメ」は「Aでないものすべてが禁止」という意味です。したがって「非常口でないものは開けてはいけない」が正しい言い換えです。",
+      q3: "「非電気製品ではない」は二重否定で「電気製品である」という意味です。したがって「電気製品である機器のみ使用できる」が正しい解釈になります。"
+    };
+
+    function checkAnswer(qName, correct) {
+      const selected = document.querySelector('input[name="' + qName + '"]:checked');
+      const box = document.getElementById(qName + '-result');
+      if (!selected) {
+        box.textContent = "まず選択肢を一つ選んでください。";
+        box.className = "result neutral";
+        return;
+      }
+
+      if (selected.value === correct) {
+        box.innerHTML = "◎ 正解です。<br>" + explanations[qName];
+        box.className = "result correct";
+      } else {
+        box.innerHTML = "× 不正解です。もう一度考えてみましょう。<br>" + explanations[qName];
+        box.className = "result incorrect";
+      }
+    }
+  </script>
+</body>
+</html>
